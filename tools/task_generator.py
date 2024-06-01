@@ -19,6 +19,14 @@ def generate_tasks(n, U_total, min_period, max_period):
         deadline = period
         tasks.append({
             'id': i, 'period': period, 'wcet': wcet, 'deadline': deadline,
-            'remaining_time': wcet, 'next_release': 0, 'processor': -1, 'blocked': False
+            'remaining_time': wcet, 'next_release': 0, 'processor': -1, 'resource': -1, 'blocked': False
         })
     return tasks
+
+def generate_resources(tasks, num_resources):
+    resources = [[] for _ in range(num_resources)]
+    for task in tasks:
+        resource_id = random.randint(0, num_resources - 1)
+        resources[resource_id].append(task)
+        task['resource'] = resource_id
+    return resources
