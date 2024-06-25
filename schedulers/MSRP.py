@@ -1,11 +1,14 @@
 from tools.scheduling import*
 def check_deadlines(processors, time):
+    failed = []
     for p in processors:
         for t in p:
             if t['arrival'] <= time and t['remaining_time'] > 0:
                 if t['deadline'] < time:
                     print('Task {} missed deadline'.format(t['id']))
-                    return True, t
+                    failed.append(t)
+    if len(failed)!=0:
+        return True, failed
     return False, None
 
 def simulate_msrp(processors, num_resources, end_time, ceilings):
@@ -67,16 +70,17 @@ def simulate_msrp(processors, num_resources, end_time, ceilings):
                     current_task[i] = None
                     num_schedulable += 1
             pi = max([ceilings[r] for r in range(num_resources) if resources_status[r] is not None], default=0)
-        status, t = check_deadlines(processors, time)
+        status, failed = check_deadlines(processors, time)
         if status:
-            num_non_scheduleable += 1
-            for c in t['criticality']:
-                if resources_status[c['resource']] == t['id']:
-                    resources_status[c['resource']] = None
-            t['arrival'] += t['period']
-            t['deadline'] += t['period']
-            t['remaining_time'] = t['wcet']
-            t['blocking'] = False
+            for t in failed:
+                num_non_scheduleable += 1
+                for c in t['criticality']:
+                    if resources_status[c['resource']] == t['id']:
+                        resources_status[c['resource']] = None
+                t['arrival'] += t['period']
+                t['deadline'] += t['period']
+                t['remaining_time'] = t['wcet']
+                t['blocking'] = False
         
         time += 1
     return num_schedulable, num_non_scheduleable
