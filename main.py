@@ -32,7 +32,7 @@ if __name__ == '__main__':
     avg = []
     for _ in range(num_run):
         tasks = generate_tasks(num_tasks, U_total, min_period, max_period, num_resources, max_critical_sections, max_premption_level)
-        end_time = calculate_huperperiod
+        end_time = calculate_huperperiod(tasks)
         ceilings = calculate_ceilings(tasks, num_resources)
         processors = wfd_mapping(tasks, num_processors)
         print_tasks(tasks)
