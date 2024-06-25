@@ -34,38 +34,52 @@ def simulate_mrsp(processors, num_resources, end_time, ceilings):
         for i, p in enumerate(processors):
             if current_task[i] is None:
                 continue
+            reset = len(current_task[i]['criticality']) * [False]
             for c in current_task[i]['criticality']:
-                if c['end'] < current_task[i]['wcet'] - current_task[i]['remaining_time']:
+                if c['end'] < task['wcet'] - task['remaining_time']:
                     if resources_status[c['resource']] == current_task[i]['id']:
-                        resources_status[c['resource']] = None
-
+                        reset[c['resource']] = True
+            for c in current_task[i]['criticality']:
+                if c['start'] <= task['wcet'] - task['remaining_time'] < c['end']:
+                    if resources_status[c['resource']] == current_task[i]['id']:
+                        reset[c['resource']] = False
+            
+            for i in range(len(reset)):
+                if reset[i]:
+                    resources_status[i] = None
+                    
+                        
         for i, p in enumerate(processors):
             tasks = edf_schedule_order(p, time)
             
             if tasks is None:
                 continue
-            
+
             for task in tasks:
-                if current_task[i] is not None and task['id'] != current_task[i]['id'] and task['preemption_level'] <= pi:
-                    continue 
-
-
                 blocked = False
                 for c in task['criticality']:
                     if c['start'] <= task['wcet'] - task['remaining_time'] < c['end']:
-                        if resources_status[c['resource']] is not None and  resources_status[c['resource']] != current_task[i]['id']:
+                        if resources_status[c['resource']] is not None and  resources_status[c['resource']] != task['id']:
                             blocked = True
+                            task['blocking'] = True
                             break 
                 if blocked: 
                     continue 
-                
-                if current_task[i] != None:
-                    for c in current_task[i]['criticality']:
+                if current_task[i] is None:
+                    current_task[i] = task
+                elif task['id'] != current_task[i]['id']:
+                    if task['preemption_level'] > pi:
+                        current_task[i] = task
+                if current_task[i]['blocking']:
+                    current_task[i] = task
+                if current_task[i] is None:
+                    continue
+                current_task[i]['blocking'] = False
+                for c in current_task[i]['criticality']:
+                    if c['end'] < current_task[i]['wcet'] - current_task[i]['remaining_time']:
                         if resources_status[c['resource']] == current_task[i]['id']:
                             resources_status[c['resource']] = None
-                
-                # is_changed = task['id'] == current_task[i]['id'] 
-                current_task[i] = task 
+            
                 for c in current_task[i]['criticality']:
                     if c['start'] <= current_task[i]['wcet'] - current_task[i]['remaining_time'] < c['end']:
                         resources_status[c['resource']] = current_task[i]['id']
