@@ -28,18 +28,17 @@ if __name__ == '__main__':
     num_processors = 2
     max_premption_level = 3
     max_critical_sections = 2
-    num_run = 1
+    num_run = 10
     avg = []
     for _ in range(num_run):
         tasks = generate_tasks(num_tasks, U_total, min_period, max_period, num_resources, max_critical_sections, max_premption_level)
-        end_time = 100
-        tasks = tasks
+        end_time = calculate_huperperiod
         ceilings = calculate_ceilings(tasks, num_resources)
         processors = wfd_mapping(tasks, num_processors)
         print_tasks(tasks)
         print(20 * '-')
 
-        scheduleable, non_scheduleable = evaluate(processors, num_resources, 'MSRP', end_time, ceilings)
+        scheduleable, non_scheduleable = evaluate(processors, num_resources, 'MRSP', end_time, ceilings)
         avg.append(scheduleable/(scheduleable+non_scheduleable))
     new_avg = [i * 100 for i in avg]
     print(new_avg)
