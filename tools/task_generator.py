@@ -10,7 +10,7 @@ def uunifast(n, U_total):
     utilizations.append(sum_U)
     return utilizations
 
-def generate_tasks(n, U_total, min_period, max_period, num_resources=2, num_critical_sections=3):
+def generate_tasks(n, U_total, min_period, max_period, num_resources=2, num_critical_sections=2, max_preemption_level=3):
     utilizations = uunifast(n, U_total)
     tasks = []
     for i, u in enumerate(utilizations):
@@ -18,11 +18,12 @@ def generate_tasks(n, U_total, min_period, max_period, num_resources=2, num_crit
         wcet = int(u * period) + 1
         deadline = period
         number_of_critical_sections = random.randint(1, num_critical_sections)
+        preemtaion_level = random.randint(1, max_preemption_level)
         criticality = []
         for _ in range(number_of_critical_sections):
-            critical_section_length = random.randint(1, wcet)
-            critical_section_start = random.randint(0, period - critical_section_length)
-            critical_section_end = critical_section_start + critical_section_length
+            critical_section_length = random.randint(1, 2)
+            critical_section_start = random.randint(0, wcet-1)
+            critical_section_end = random.randint(critical_section_start, min(wcet, critical_section_start + critical_section_length))
             critical_resource = random.randint(0, num_resources - 1)
             criticality.append({
                 'start': critical_section_start, 'end': critical_section_end, 'resource': critical_resource
@@ -31,11 +32,14 @@ def generate_tasks(n, U_total, min_period, max_period, num_resources=2, num_crit
             'id': i,
             'period': period,
             'wcet': wcet,
+            'start_time': None,
             'deadline': deadline,
+            'preemption_level': preemtaion_level,
             'criticality': criticality,
             'remaining_time': wcet,
-            'next_release': period,
+            'arrival': 0,
             'utilization': u,
+            'blocking': False,
         })
     return tasks
 
