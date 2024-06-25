@@ -6,8 +6,9 @@ def edf_schedule(tasks, time):
 
 def wfd_mapping(tasks, num_processors):
     processors = [[] for _ in range(num_processors)]
-    for task in sorted(tasks, key=lambda t: -t['wcet']):
-        worst_fit_processor = min(processors, key=lambda p: sum(t['wcet'] for t in p))
+    
+    for task in sorted(tasks, key=lambda t: -t['utilization']):
+        worst_fit_processor = min(processors, key=lambda p: sum(t['utilization'] for t in p))
         worst_fit_processor.append(task)
         task['processor'] = processors.index(worst_fit_processor)
     return processors
